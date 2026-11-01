@@ -1,0 +1,14 @@
+# Перезапустите сервер после изменения конфигурации.
+site-url: "https://grieftool.fun"
+# Совпадает с BRIDGE_TOKEN на сайте. Сгенерируйте: openssl rand -hex 32
+bridge-token: ""
+# Только для локального тестирования. В интернете используйте HTTPS.
+allow-insecure-http: false
+# Если AuthMe установлен, выдача разрешена только авторизованным игрокам.
+check-authme: true
+rewards:
+  halloween-2026:
+    # Команды от консоли, БЕЗ начального /. Доступны {player}, {uuid}.
+    # Имя раздела совпадает с идентификатором акции в админке.
+    - "give {player} minecraft:diamond 3"
+    - "tellraw {player} {\"text\":\"Ты нашёл все тыквы! Спасибо за участие.\",\"color\":\"gold\"}"

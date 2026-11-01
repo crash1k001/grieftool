@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import {randomBytes} from 'node:crypto';
+const base=process.env.TEST_BASE_URL,password=process.env.TEST_ADMIN_PASSWORD,login=process.env.TEST_ADMIN_LOGIN;
+if(!base||!password||!login)throw Error('Задайте TEST_BASE_URL, TEST_ADMIN_LOGIN и TEST_ADMIN_PASSWORD для изолированного экземпляра');
+const suffix=Date.now().toString(36);let count=0;
+async function request(path,method='GET',body,{cookie='',token=''}={}){const res=await fetch(base+'/api/'+path,{method,headers:{...(method!=='GET'?{Origin:base,'Content-Type':'application/json'}:{}),...(cookie?{Cookie:cookie}:{}),...(token?{Authorization:'Bearer '+token}:{})},body:body?JSON.stringify(body):undefined});return {res,data:await res.json()};}
+function ok(message){count++;console.log('PASS',message);}
+const owner=await request('auth','POST',{login,password});assert.equal(owner.res.status,200);const cookie=owner.res.headers.get('set-cookie').split(';')[0];
+const headers={cookie};const staffPassword=randomBytes(20).toString('hex');
+const staff=await request('admin/users','POST',{login:'helper_'+suffix,password:staffPassword,role:'support',enabled:true},headers);assert.equal(staff.res.status,200);assert.equal(staff.data.hash,undefined);ok('владелец создаёт сотрудника без раскрытия хеша');
+const logged=await request('auth','POST',{login:staff.data.login,password:staffPassword});assert.equal(logged.res.status,200);const staffCookie=logged.res.headers.get('set-cookie').split(';')[0];
+assert.equal((await request('admin/users','POST',{login:'intruder',password:staffPassword,role:'admin',enabled:true},{cookie:staffCookie})).res.status,403);
+assert.equal((await request('admin/settings','PUT',{name:'hijack'},{cookie:staffCookie})).res.status,403);
+assert.equal((await request('admin/events','GET',undefined,{cookie:staffCookie})).res.status,403);
+assert.equal((await request('admin/events','PUT',{theme:'halloween',campaign:'intruder'},{cookie:staffCookie})).res.status,403);
+assert.equal((await request('admin/news','POST',{title:'Not allowed',body:'No',published:true},{cookie:staffCookie})).res.status,403);ok('поддержка не может управлять аккаунтами, настройками и новостями');
+const rule=await request('admin/rules','POST',{title:'QA Rule '+suffix,body:'Текст правил\nВторая строка',position:90,enabled:true},headers);assert.equal(rule.res.status,200);assert.ok((await request('rules')).data.sections.some(r=>r.id===rule.data.id));ok('редактор публикует разделы на странице правил');
+const draft=await request('admin/news','POST',{title:'QA News '+suffix,body:'Новость\nПодробности',excerpt:'Коротко',slug:'qa-'+suffix,published:false,art:'pickaxe',tag:'Обновления'},headers);assert.equal(draft.res.status,200);
+assert.equal((await request('news/'+draft.data.slug)).res.status,404);assert.ok(!(await request('news')).data.articles.some(n=>n.id===draft.data.id));ok('черновик не виден посетителям');
+await request('admin/news/'+draft.data.id,'PUT',{...draft.data,published:true},headers);assert.equal((await request('news/'+draft.data.slug)).data.title,draft.data.title);ok('опубликованная новость открывается по своему адресу');
+const created=await request('support/tickets','POST',{nickname:'QA_Player',subject:'QA Support '+suffix,message:'Нужна помощь с тестовым заказом'});assert.equal(created.res.status,201);const ticket=created.data.ticket,token=created.data.accessToken;assert.equal(ticket.accessHash,undefined);ok('игрок создаёт приватное обращение');
+assert.equal((await request('support/tickets/'+ticket.id)).res.status,404);assert.equal((await request('support/tickets/'+ticket.id,'GET',undefined,{token:'wrong'})).res.status,404);ok('чужая переписка недоступна без ключа');
+const inbox=await request('admin/community','GET',undefined,{cookie:staffCookie});assert.ok(inbox.data.tickets.some(t=>t.id===ticket.id));assert.equal(inbox.data.users.length,0);assert.equal(inbox.data.rules.length,0);ok('сотрудник видит обращения без доступа к другим данным');
+assert.equal((await request('admin/tickets/'+ticket.id+'/messages','POST',{message:'Здравствуйте! Сейчас поможем.'},{cookie:staffCookie})).res.status,200);
+let conversation=await request('support/tickets/'+ticket.id,'GET',undefined,{token});assert.equal(conversation.data.messages.at(-1).author,'staff');assert.equal(conversation.data.status,'answered');ok('ответ из админки виден игроку');
+await request('admin/tickets/'+ticket.id,'PUT',{status:'closed'},{cookie:staffCookie});conversation=await request('support/tickets/'+ticket.id+'/messages','POST',{message:'Уточняющий вопрос'},{token});assert.equal(conversation.data.status,'open');assert.equal(conversation.data.messages.length,3);ok('игрок может продолжить закрытое обращение');
+await request('admin/users/'+staff.data.id,'PUT',{login:staff.data.login,role:'support',enabled:false},headers);assert.equal((await request('admin/community','GET',undefined,{cookie:staffCookie})).res.status,401);ok('отключение аккаунта немедленно отменяет его доступ');
+assert.equal((await request('admin/users/owner','DELETE',undefined,headers)).res.status,400);ok('владелец защищён от удаления');
+await request('admin/rules/'+rule.data.id,'DELETE',undefined,headers);await request('admin/news/'+draft.data.id,'DELETE',undefined,headers);await request('admin/users/'+staff.data.id,'DELETE',undefined,headers);await request('auth','DELETE',undefined,headers);ok('удаление контента и сотрудника');
+console.log(`${count} community checks passed`);

@@ -1,0 +1,11 @@
+name: GriefToolBridge
+version: 1.0.0
+main: fun.grieftool.bridge.GriefToolBridge
+api-version: '1.16'
+author: GriefTool
+softdepend: [AuthMe]
+description: Связь с сайтом GriefTool и одноразовые награды за события
+commands:
+  gtclaim:
+    description: Получить награду за собранные на сайте тыквы
+    usage: /gtclaim <код с сайта>

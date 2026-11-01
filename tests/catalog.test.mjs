@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {quote} from '../lib/catalog.mjs';
+const product={enabled:true,price:9999,discount:15};
+const promo={enabled:true,percent:10,minimum:0,limit:0,used:0,starts:'',ends:''};
+test('скидки считаются в целых копейках на сервере',()=>{assert.deepEqual(quote(product,promo),{amount:7649,original:9999,promoApplied:true});});
+test('отключённый товар нельзя заказать',()=>assert.throws(()=>quote({...product,enabled:false}),/недоступен/));
+test('истёкшие и будущие промокоды отклоняются',()=>{assert.throws(()=>quote(product,{...promo,ends:'2020-01-01'}));assert.throws(()=>quote(product,{...promo,starts:'2100-01-01'}));});
+test('лимит и минимальная сумма проверяются после скидки товара',()=>{assert.throws(()=>quote(product,{...promo,limit:1,used:1}));assert.throws(()=>quote(product,{...promo,minimum:9000}));});
+test('отключённые промокоды не работают',()=>assert.throws(()=>quote(product,{...promo,enabled:false})));

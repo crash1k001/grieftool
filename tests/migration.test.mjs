@@ -1,0 +1,16 @@
+import {test,after} from 'node:test';
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {mkdtempSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+const dir=mkdtempSync(join(tmpdir(),'grieftool-migration-'));process.env.DATA_DIR=dir;
+const old=new DatabaseSync(join(dir,'grieftool.sqlite'));
+old.exec('CREATE TABLE documents (kind TEXT,id TEXT,value TEXT,PRIMARY KEY(kind,id)); CREATE TABLE sessions (token TEXT PRIMARY KEY,expires INTEGER); CREATE TABLE attempts (id TEXT PRIMARY KEY,count INTEGER,expires INTEGER);');
+const insert=(kind,id,value)=>old.prepare('INSERT INTO documents VALUES(?,?,?)').run(kind,id,JSON.stringify(value));
+insert('meta','initialized',{at:1});insert('settings','site',{name:'Existing server',headline:'Мой заголовок',rules:'Существующие правила владельца'});insert('products','existing-product',{id:'existing-product',price:12345});insert('orders','existing-order',{id:'existing-order',amount:12345});old.prepare('INSERT INTO sessions VALUES(?,?)').run('legacy-session',Date.now()+100000);old.close();
+const {db,get,list}=await import('../lib/store.mjs');
+test('миграция сохраняет каталог, заказы и пользовательский заголовок',()=>{assert.equal(get('products','existing-product').price,12345);assert.equal(get('orders','existing-order').amount,12345);assert.equal(get('settings','site').headline,'Мой заголовок');});
+test('старые правила переносятся в раздел без дублирования',()=>{assert.equal(list('rules').length,1);assert.equal(list('rules')[0].body,'Существующие правила владельца');db();assert.equal(list('rules').length,1);});
+test('старые сессии завершаются и появляется связь с аккаунтом',()=>{assert.equal(db().prepare('SELECT COUNT(*) n FROM sessions').get().n,0);assert.ok(db().prepare('PRAGMA table_info(sessions)').all().some(c=>c.name==='user_id'));});
+after(()=>{db().close();rmSync(dir,{recursive:true,force:true});});
