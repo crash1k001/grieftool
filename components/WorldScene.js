@@ -1,11 +1,6 @@
-// Isometric terrain illustration drawn specifically for GriefTool.
-export default function WorldScene(){
- const blocks=[];const palette=['#a96a37','#9b5c30','#b3783d','#c18546'];
- for(let z=0;z<8;z++)for(let x=0;x<9;x++){
-  if((x===0&&z<2)||(x===8&&z>5)||(z===7&&x<2))continue;
-  const px=260+(x-z)*24,py=235+(x+z)*12;const h=24+((x*7+z*3)%3)*7+(z<3?18:0);
-  blocks.push(<g key={x+'-'+z}><path d={`M${px} ${py-h}l24 12-24 12-24-12Z`} fill={palette[(x+z)%4]}/><path d={`M${px-24} ${py-h+12}l24 12v${h}l-24-12Z`} fill="#67402e"/><path d={`M${px} ${py-h+24}l24-12v${h}l-24 12Z`} fill="#452c26"/><path d={`M${px-24} ${py-h+12}l24 12 24-12v7l-24 12-24-12Z`} fill="#d1994e" opacity=".65"/></g>);
- }
- function tree(x,y,k){return <g key={k}><path d={`M${x-4} ${y}h9v-56h-9Z`} fill="#65342c"/><path d={`m${x} ${y-105} 37 19v39l-37 19-37-19v-39Z`} fill="#8d552d"/><path d={`m${x} ${y-105} 37 19-37 19-37-19Z`} fill="#e8ad58"/><path d={`m${x-37} ${y-86} 37 19v39l-37-19Z`} fill="#b97536"/><path d={`m${x} ${y-89} 29 15-29 15-29-15Z`} fill="#f1bb6c"/><path d={`m${x+7} ${y-62} 29-15v14l-29 15Z`} fill="#78452c"/></g>;}
- return <svg className="world-scene" viewBox="0 0 560 490" aria-hidden="true"><defs><radialGradient id="sun"><stop stopColor="#ffc881" stopOpacity=".55"/><stop offset="1" stopColor="#ffb24c" stopOpacity="0"/></radialGradient><linearGradient id="water" x2="1" y2="1"><stop stopColor="#d77b32"/><stop offset="1" stopColor="#edaa55"/></linearGradient></defs><ellipse cx="280" cy="408" rx="188" ry="35" fill="#000" opacity=".16"/><circle cx="295" cy="180" r="190" fill="url(#sun)"/><g className="scene-clouds" fill="#ffe0aa" opacity=".2"><path d="M100 100h60V86h45v32h-105Z"/><path d="M360 135h55v-13h43v28h-98Z"/><path d="M270 63h65V50h35v29H270Z"/></g><g>{blocks}</g><path d="m260 305 72 36-72 36-72-36Z" fill="url(#water)"/><path d="m260 321 42 21-42 21-42-21Z" fill="#f5c67c" opacity=".3"/><path d="m229 338 11 6 22-11 11 5-33 16-22-11Z" fill="#ffe0a3" opacity=".5"/>{tree(160,310,'a')}{tree(378,320,'b')}{tree(351,266,'c')}<g><path d="m250 166 61 31v68l-61-31Z" fill="#a66a42"/><path d="m311 197 42-21v68l-42 21Z" fill="#7a4832"/><path d="m250 166 41-21 62 31-42 21Z" fill="#edb66f"/><path d="m237 168 56-47 74 58-56 29Z" fill="#714331"/><path d="m237 168 56-47 18 38-47 40Z" fill="#a65c30"/><path d="m293 121 74 58-56 29v-49Z" fill="#4b3029"/><path d="m267 200 16 8v21l-16-8Z" fill="#ffcc7d"/><path d="m323 211 16-8v21l-16 8Z" fill="#ffd48b"/><path d="m288 224 14 7v29l-14-7Z" fill="#4c3029"/><path d="m267 210 16 8m-8-14v21" stroke="#a46236" strokeWidth="2"/><path d="m333 153 12 7v-37l-12-6Z" fill="#b2784b"/><path d="m345 160 8-4v-37l-8 4Z" fill="#76513c"/><path d="m333 117 8-4 12 6-8 4Z" fill="#ddb585"/></g><g className="scene-firefly" fill="#ffe2a0"><path d="M111 215h5v5h-5Z"/><path d="M426 248h4v4h-4Z"/><path d="M222 125h3v3h-3Z"/><path d="M378 393h4v4h-4Z"/></g><path d="M60 412h12m-6-6v12M466 187h12m-6-6v12" stroke="#ffdb9c" opacity=".5"/></svg>;
+export default function WorldScene() {
+ return <img className="world-scene minecraft-panorama"
+  src="/images/minecraft/panorama-0.png" width={1024} height={1024}
+  alt="Закат над горами и вишнёвой рощей в Minecraft"
+  fetchPriority="high" decoding="async" draggable={false}/>;
 }

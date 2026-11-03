@@ -7,6 +7,7 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env (at least 8 characters)}
       APP_ORIGIN: https://${DOMAIN:?Set DOMAIN in .env}
       DATA_DIR: /app/data
+      TRUST_PROXY: 'true'
       BRIDGE_TOKEN: ${BRIDGE_TOKEN:-}
     volumes:
       - shop-data:/app/data

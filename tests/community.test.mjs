@@ -18,12 +18,11 @@ const rule=await request('admin/rules','POST',{title:'QA Rule '+suffix,body:'Т�
 const draft=await request('admin/news','POST',{title:'QA News '+suffix,body:'Новость\nПодробности',excerpt:'Коротко',slug:'qa-'+suffix,published:false,art:'pickaxe',tag:'Обновления'},headers);assert.equal(draft.res.status,200);
 assert.equal((await request('news/'+draft.data.slug)).res.status,404);assert.ok(!(await request('news')).data.articles.some(n=>n.id===draft.data.id));ok('черновик не виден посетителям');
 await request('admin/news/'+draft.data.id,'PUT',{...draft.data,published:true},headers);assert.equal((await request('news/'+draft.data.slug)).data.title,draft.data.title);ok('опубликованная новость открывается по своему адресу');
-const created=await request('support/tickets','POST',{nickname:'QA_Player',subject:'QA Support '+suffix,message:'Нужна помощь с тестовым заказом'});assert.equal(created.res.status,201);const ticket=created.data.ticket,token=created.data.accessToken;assert.equal(ticket.accessHash,undefined);ok('игрок создаёт приватное обращение');
-assert.equal((await request('support/tickets/'+ticket.id)).res.status,404);assert.equal((await request('support/tickets/'+ticket.id,'GET',undefined,{token:'wrong'})).res.status,404);ok('чужая переписка недоступна без ключа');
-const inbox=await request('admin/community','GET',undefined,{cookie:staffCookie});assert.ok(inbox.data.tickets.some(t=>t.id===ticket.id));assert.equal(inbox.data.users.length,0);assert.equal(inbox.data.rules.length,0);ok('сотрудник видит обращения без доступа к другим данным');
-assert.equal((await request('admin/tickets/'+ticket.id+'/messages','POST',{message:'Здравствуйте! Сейчас поможем.'},{cookie:staffCookie})).res.status,200);
-let conversation=await request('support/tickets/'+ticket.id,'GET',undefined,{token});assert.equal(conversation.data.messages.at(-1).author,'staff');assert.equal(conversation.data.status,'answered');ok('ответ из админки виден игроку');
-await request('admin/tickets/'+ticket.id,'PUT',{status:'closed'},{cookie:staffCookie});conversation=await request('support/tickets/'+ticket.id+'/messages','POST',{message:'Уточняющий вопрос'},{token});assert.equal(conversation.data.status,'open');assert.equal(conversation.data.messages.length,3);ok('игрок может продолжить закрытое обращение');
+assert.equal((await request('support/tickets','POST',{nickname:'QA_Player',subject:'Disabled',message:'Disabled feature'})).res.status,410);
+assert.equal((await request('admin/tickets/legacy/messages','POST',{message:'Disabled'},headers)).res.status,410);
+assert.equal((await request('admin/community','GET',undefined,{cookie:staffCookie})).res.status,403);
+assert.deepEqual((await request('admin/community','GET',undefined,headers)).data.tickets,[]);
+ok('отключённая поддержка не принимает обращения и не раскрывает архив');
 await request('admin/users/'+staff.data.id,'PUT',{login:staff.data.login,role:'support',enabled:false},headers);assert.equal((await request('admin/community','GET',undefined,{cookie:staffCookie})).res.status,401);ok('отключение аккаунта немедленно отменяет его доступ');
 assert.equal((await request('admin/users/owner','DELETE',undefined,headers)).res.status,400);ok('владелец защищён от удаления');
 await request('admin/rules/'+rule.data.id,'DELETE',undefined,headers);await request('admin/news/'+draft.data.id,'DELETE',undefined,headers);await request('admin/users/'+staff.data.id,'DELETE',undefined,headers);await request('auth','DELETE',undefined,headers);ok('удаление контента и сотрудника');

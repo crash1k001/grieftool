@@ -1,4 +1,4 @@
-"""End-to-end rules, news, support and staff accounts on an isolated test instance."""
+"""End-to-end rules, news, retired support and staff accounts on an isolated test instance."""
 import os, secrets, time
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
@@ -46,40 +46,14 @@ with sync_playwright() as p:
     expect(visitor.locator('.document-prose')).to_contain_text('Проверка полного текста новости.')
     visitor.screenshot(path=str(results/'news-article.png'),full_page=True)
     visitor.goto(base+'/support',wait_until='networkidle')
-    subject='Browser support '+suffix
-    visitor.get_by_label('Игровой ник',exact=True).fill('Browser_Player')
-    visitor.get_by_label('Тема обращения',exact=True).fill(subject)
-    visitor.get_by_label('Что случилось?',exact=True).fill('Проверка поддержки: помогите с заказом.')
-    visitor.get_by_role('button',name='Отправить обращение',exact=True).click()
-    expect(visitor.get_by_role('heading',name=subject,exact=True)).to_be_visible()
-    visitor.screenshot(path=str(results/'support-player.png'),full_page=True)
-    nav.get_by_role('button',name='Поддержка',exact=True).click()
-    owner.locator('.inbox-ticket').filter(has_text=subject).click()
-    owner.get_by_label('Ответ игроку',exact=True).fill('Привет! Ответ администрации получен.')
-    owner.get_by_role('button',name='Ответить',exact=True).click()
-    expect(owner.locator('.ticket-messages')).to_contain_text('Ответ администрации получен.')
-    expect(visitor.locator('.ticket-messages')).to_contain_text('Ответ администрации получен.',timeout=20000)
-    visitor.get_by_label('Сообщение в поддержку',exact=True).fill('Спасибо! Можно ещё один вопрос?')
-    visitor.get_by_role('button',name='Отправить',exact=True).click()
-    expect(owner.locator('.ticket-messages')).to_contain_text('Можно ещё один вопрос?',timeout=20000)
-    owner.screenshot(path=str(results/'support-admin.png'),full_page=True)
-    owner.get_by_role('button',name='Закрыть обращение',exact=True).click()
-    expect(visitor.locator('.ticket-header')).to_contain_text('Обращение закрыто',timeout=20000)
-    # Recover this private conversation in another browser with its capability code.
-    access=visitor.evaluate("JSON.parse(localStorage.getItem('grieftool-support-tickets'))[0]")
-    recovered_context=browser.new_context();recovered=recovered_context.new_page()
-    recovered.goto(base+'/support',wait_until='networkidle')
-    recovered.get_by_text('У меня есть код обращения',exact=True).click()
-    recovered.get_by_label('Код доступа',exact=True).fill(access['id']+'.'+access['token'])
-    recovered.get_by_role('button',name='Открыть переписку',exact=True).click()
-    expect(recovered.get_by_role('heading',name=subject,exact=True)).to_be_visible()
-    expect(recovered.locator('.ticket-messages')).to_contain_text('Можно ещё один вопрос?')
+    expect(visitor).to_have_url(base+'/main')
+    expect(nav.get_by_role('button',name='Поддержка',exact=True)).to_have_count(0)
     nav.get_by_role('button',name='Аккаунты',exact=True).click()
     owner.get_by_role('button',name='Создать аккаунт',exact=True).click()
     dialog=owner.get_by_role('dialog');staff_login='staff_'+suffix;staff_password=secrets.token_urlsafe(18)
     dialog.get_by_label('Логин сотрудника',exact=True).fill(staff_login)
     dialog.get_by_label('Пароль',exact=True).fill(staff_password)
-    dialog.get_by_label('Роль',exact=True).select_option('support')
+    dialog.get_by_label('Роль',exact=True).select_option('admin')
     dialog.get_by_role('button',name='Сохранить',exact=True).click()
     expect(owner.get_by_role('row').filter(has_text=staff_login)).to_be_visible()
     employee_context=browser.new_context();employee=employee_context.new_page()
@@ -87,8 +61,8 @@ with sync_playwright() as p:
     employee.get_by_label('Логин',exact=True).fill(staff_login)
     employee.get_by_label('Пароль администратора',exact=True).fill(staff_password)
     employee.get_by_role('button',name='Войти в панель').click()
-    expect(employee.get_by_role('heading',name='Поддержка',exact=True)).to_be_visible()
-    expect(employee.get_by_role('navigation',name='Разделы админки').get_by_role('button')).to_have_count(1)
+    expect(employee.get_by_role('heading',name='Обзор',exact=True)).to_be_visible()
+    expect(employee.get_by_role('navigation',name='Разделы админки').get_by_role('button',name='Аккаунты',exact=True)).to_have_count(0)
     owner.get_by_role('row').filter(has_text=staff_login).get_by_role('button',name='Изменить',exact=True).click()
     owner.get_by_role('dialog').get_by_label('Разрешить вход в панель',exact=True).uncheck()
     owner.get_by_role('dialog').get_by_role('button',name='Сохранить',exact=True).click()
@@ -109,4 +83,4 @@ with sync_playwright() as p:
         assert visitor.evaluate('document.documentElement.scrollWidth<=innerWidth'), 'Overflow on '+path
     assert not errors,errors
     browser.close()
-    print('PASS: rules editor, news publishing, player/staff conversation, recovery code, staff login/roles/revocation, mobile pages')
+    print('PASS: rules editor, news publishing, support removal, staff login/roles/revocation, mobile pages')

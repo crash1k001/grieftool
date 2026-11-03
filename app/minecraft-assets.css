@@ -1,0 +1,34 @@
+/* Original game imagery: cards, dialogs and tables share the same local assets. */
+.minecraft-item { object-fit:contain; image-rendering:pixelated; flex-shrink:0; }
+.server-hero { background:#13191b; border-color:#36403b; }
+.server-hero:before { background:linear-gradient(110deg,#141b1d,#1b2425); }
+.server-world { overflow:hidden; align-self:stretch; }
+.server-world:after { inset:0; z-index:1; background:linear-gradient(90deg,#172022,transparent 35%),linear-gradient(0deg,#11191dbb,transparent 40%); mask-image:none; transform:none; pointer-events:none; }
+.server-world .minecraft-panorama { position:absolute; inset:0; width:100%; height:100%; max-height:none; object-fit:cover; object-position:55% center; animation:none; filter:none; }
+.world-sun { display:none; }
+.world-caption { color:#fff; opacity:1; text-shadow:0 2px 8px #000; font-size:10px; }
+.hero-overline { color:#e9b583; }
+.server-hero-copy>p { color:#c7ceca; }
+.product-art-wrap .minecraft-item { width:112px; height:112px; transform:none; filter:drop-shadow(0 12px 10px #0005); }
+.table-product>.minecraft-item { width:36px; height:36px; }
+.checkout-product>.minecraft-item { width:75px; height:75px; }
+.news-cover,.article-cover { background-image:linear-gradient(0deg,#10201977,#10201922),url('/images/minecraft/panorama-1.png'); background-size:cover; background-position:center; }
+.news-cover.cover-1 { background-image:linear-gradient(0deg,#10201977,#10201922),url('/images/minecraft/panorama-2.png'); }
+.news-cover.cover-2 { background-image:linear-gradient(0deg,#10201977,#10201922),url('/images/minecraft/panorama-0.png'); }
+.news-cover-grid { display:none; }
+.news-cover .minecraft-item { width:75px; height:75px; transform:none; padding:12px; box-sizing:content-box; background:#10171abf; border:1px solid #ffffff25; border-radius:16px; filter:none; }
+.article-cover .minecraft-item { width:100px; height:100px; transform:none; filter:drop-shadow(0 5px 15px #0008); }
+.news-cover>span { background:#10171ad9; color:#fff; }
+.minecraft-pumpkin { image-rendering:pixelated; object-fit:contain; width:100%; height:100%; }
+.hunt-status>.minecraft-pumpkin { width:32px; height:32px; }
+.hunt-win>.minecraft-pumpkin { display:block; width:75px; height:75px; margin:0 auto; }
+.theme-symbol .minecraft-pumpkin { width:32px; height:32px; }
+.edge-leaves .game-icon { display:block; width:40px; height:40px; }
+@media(max-width:640px) {
+ .server-hero { min-height:640px; }
+ .server-world { width:100%; height:280px; min-height:280px; margin-top:20px; }
+ .server-world:after { background:linear-gradient(180deg,#172022,transparent 30%),linear-gradient(0deg,#11191dbb,transparent 40%); }
+ .server-world .minecraft-panorama { object-position:center 50%; }
+ .product-art-wrap .minecraft-item { width:88px; height:88px; }
+ .edge-leaves .game-icon { width:25px; height:25px; }
+}

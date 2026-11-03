@@ -4,4 +4,5 @@ node_modules
 data
 .env*
 test-results
+screenshots
 docs

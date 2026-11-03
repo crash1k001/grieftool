@@ -1,0 +1,48 @@
+import os
+from pathlib import Path
+from playwright.sync_api import sync_playwright, expect
+base=os.environ['TEST_BASE_URL']
+with sync_playwright() as p:
+    browser=p.chromium.launch(headless=True,executable_path=os.environ.get('CHROMIUM_PATH','/usr/bin/chromium'),args=['--no-sandbox'])
+    context=browser.new_context(viewport={'width':1440,'height':1000},reduced_motion='reduce')
+    page=context.new_page();errors=[]
+    page.on('pageerror',lambda e:errors.append(str(e)))
+    r=context.request.post(base+'/api/auth',headers={'Origin':base},data={'login':os.environ['TEST_ADMIN_LOGIN'],'password':os.environ['TEST_ADMIN_PASSWORD']});assert r.status==200
+    page.goto(base+'/admin',wait_until='networkidle')
+    nav=page.get_by_role('navigation',name='Разделы админки')
+    nav.get_by_role('button',name='Тестовые покупки',exact=True).click()
+    page.get_by_role('checkbox',name='Разрешить тестовые покупки').check()
+    page.get_by_role('button',name='Сохранить режим',exact=True).click()
+    expect(page.get_by_role('status')).to_contain_text('Тестовый режим включён')
+    visitor=browser.new_page(viewport={'width':390,'height':844})
+    visitor.on('pageerror',lambda e:errors.append(str(e)))
+    visitor.goto(base+'/main',wait_until='networkidle')
+    expect(visitor.locator('.store-test-notice')).to_contain_text('покупки за 0 ₽')
+    visitor.get_by_role('button',name='Купить',exact=True).first.click()
+    visitor.get_by_label('Твой игровой ник').fill('BrowserTest')
+    visitor.get_by_role('checkbox').check()
+    expect(visitor.locator('.checkout-total')).to_contain_text('0 ₽')
+    expect(visitor.locator('input[autocomplete="cc-number"]')).to_have_count(0)
+    visitor.get_by_role('button',name='Оформить бесплатно',exact=True).click()
+    expect(visitor.get_by_role('heading',name='Тестовая покупка оформлена',exact=True)).to_be_visible()
+    Path('test-results').mkdir(exist_ok=True)
+    visitor.screenshot(path='test-results/test-purchase-mobile.png',full_page=True)
+    page.reload(wait_until='networkidle')
+    nav.get_by_role('button',name='Заказы',exact=True).click()
+    page.get_by_label('Статус оплаты').select_option('test')
+    expect(page.locator('.admin-table tbody tr')).to_have_count(1)
+    expect(page.locator('.admin-table tbody')).to_contain_text('BrowserTest')
+    nav.get_by_role('button',name='Тестовые покупки',exact=True).click()
+    expect(page.get_by_role('heading',name='Тестовых заказов: 1')).to_be_visible()
+    page.screenshot(path='test-results/test-mode-admin.png',full_page=True)
+    page.get_by_role('button',name='Очистить тестовые заказы',exact=True).click()
+    page.get_by_role('button',name='Удалить тестовые заказы',exact=True).click()
+    expect(page.get_by_role('heading',name='Тестовых заказов: 0')).to_be_visible()
+    page.get_by_role('checkbox',name='Разрешить тестовые покупки').uncheck()
+    page.get_by_role('button',name='Сохранить режим',exact=True).click()
+    expect(page.get_by_role('status')).to_contain_text('выключен')
+    visitor.goto(base+'/main',wait_until='networkidle')
+    expect(visitor.locator('.store-test-notice')).to_have_count(0)
+    assert not errors,errors
+    browser.close()
+    print('PASS: owner toggles test mode, anonymous mobile checkout for 0 rubles, test order filter, cleanup and disabling')

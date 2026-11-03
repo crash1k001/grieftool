@@ -16,15 +16,15 @@ with sync_playwright() as p:
     errors = []
     page.on('pageerror', lambda e: errors.append(str(e)))
     page.goto(base + '/main', wait_until='networkidle')
-    expect(page.get_by_role('button', name='Подробнее')).to_have_count(4)
+    expect(page.get_by_role('button', name='Купить')).to_have_count(4)
     page.screenshot(path=str(results / 'store-desktop.png'), full_page=True)
     page.get_by_role('navigation', name='Категории товаров').get_by_role('button', name='Ключи').click()
-    expect(page.get_by_role('button', name='Подробнее')).to_have_count(1)
+    expect(page.get_by_role('button', name='Купить')).to_have_count(1)
     page.get_by_role('navigation', name='Категории товаров').get_by_role('button', name='Привилегии').click()
     page.get_by_role('textbox', name='Поиск товаров', exact=True).fill('LEGEND')
-    expect(page.get_by_role('button', name='Подробнее')).to_have_count(1)
+    expect(page.get_by_role('button', name='Купить')).to_have_count(1)
     page.get_by_role('textbox', name='Поиск товаров', exact=True).fill('')
-    page.get_by_role('button', name='Подробнее').first.click()
+    page.get_by_role('button', name='Купить').first.click()
     dialog = page.get_by_role('dialog')
     expect(dialog).to_be_visible()
     dialog.get_by_role('textbox', name='Твой игровой ник').fill('Browser_Player')
@@ -68,7 +68,7 @@ with sync_playwright() as p:
     for width in [390, 360]:
         page.set_viewport_size({'width': width, 'height': 844})
         page.goto(base + '/main', wait_until='networkidle')
-        expect(page.get_by_role('button', name='Подробнее')).to_have_count(4)
+        expect(page.get_by_role('button', name='Купить')).to_have_count(4)
         assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth'), 'Horizontal page overflow'
         page.screenshot(path=str(results / f'store-mobile-{width}.png'), full_page=True)
     assert not errors, errors

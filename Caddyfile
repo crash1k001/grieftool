@@ -1,5 +1,10 @@
 {$DOMAIN} {
     encode zstd gzip
-    reverse_proxy web:3000
+    request_body {
+        max_size 5MB
+    }
+    reverse_proxy web:3000 {
+        header_up X-GriefTool-Client-IP {remote_host}
+    }
     header Strict-Transport-Security "max-age=31536000"
 }
