@@ -1,0 +1,43 @@
+chat:
+  slejka: "&8[&6&lСЛЕЖКА&8] &e{PLAYER} &8» &f{message}"
+  console: "&8[&6&lКОНСОЛЬ&8] &e{player} &8» &f/{command}"
+  delay: 3
+  delay-message: "&cИзвините! Но у вас задержка {TIME} сек."
+  local: "§7(§bʟ§7) §8| {PREFIX}§f{PLAYER}§f{SUFFIX} §7» {MESSAGE}"
+  global: "§7(§bɢ§7) §8| {PREFIX}§f{PLAYER}§f{SUFFIX} §7» {MESSAGE}"
+  block-radius: 100
+allowed-symbols:
+  standard: " йцукенгшщзхъфывапролджэячсмитьбюіЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮІ!@#$%^&*()_+-=[]{}|;:',.<>?/0123456789"
+  advanced: ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZйцукенгшщзхъфывапролджэячсмитьбюіЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮІ!@#$%^&*()_+-=[]{}|;:\",.<>?/0123456789'
+hover:
+  - " "
+  - " §6|§f Имя: §a%player_name%"
+  - " §6|§f Наиграно: §a%statistic_seconds_played% секунд"
+  - " §6|§f Монет: §a%statistic_seconds_played% секунд"
+  - " §6|§f Фунтов: §a%statistic_seconds_played% секунд"
+  - " "
+  - " §6|§f Если вы §cстраж§f порядка"
+  - " §6|§f Нажмите §eЛКМ§f, чтоб §aоткрыть§f меню §cнаказаний§f!"
+  - " "
+renamer:
+  name: "Уникальнеший предмет"
+messages:
+  no-menu-perm: "У вас нет прав на меню наказаний!"
+  player-warning: "§fВ вашем §cсообщении§f есть §cзапрещенные§f слова!"
+  notify-message: "§aСообщение/Команда§f игрока §c{PLAYER}§f: §7[§6{ORIGINAL_MESSAGE}§7]§f было отфильтровано в: §7[§a{FILTERED_MESSAGE}§7]"
+  chat-delay-message: "Вы не можете писать в чат до тех пор, пока не отыграете {MINUTES} минут."
+  advanced-delay-message: "Вы не можете писать в чат эти символы, пока не отыграете {TIME} минут."
+time:
+  switch-to-advanced: 36000
+  chat-delay: 900
+
+console-mask-commands:
+  - login
+  - l
+  - register
+  - reg
+  - changepassword
+  - changepass
+  - password
+  - 2fa
+  - totp
